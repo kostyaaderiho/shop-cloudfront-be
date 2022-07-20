@@ -20,9 +20,9 @@ Depending on your preferred package manager, follow the instructions below to de
 
 ## Scripts
 
--   `npm run dev` - run swagger documentation
 -   `npm run deploy` - deploy on AWS
 -   `npm run test` - run tests
+-   `npm run docs` - swagger documentation
 
 ## Test your service
 
