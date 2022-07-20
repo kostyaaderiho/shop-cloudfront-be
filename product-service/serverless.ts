@@ -9,7 +9,6 @@ const serverlessConfiguration: AWS = {
     plugins: [
         'serverless-auto-swagger',
         'serverless-offline',
-        // 'serverless-esbuild'
         'serverless-webpack'
     ],
     provider: {
@@ -41,16 +40,6 @@ const serverlessConfiguration: AWS = {
             packager: 'npm',
             excludeFiles: 'src/**/*.test.ts'
         }
-        // esbuild: {
-        //     bundle: true,
-        //     minify: false,
-        //     sourcemap: true,
-        //     exclude: ['aws-sdk'],
-        //     target: 'node14',
-        //     define: { 'require.resolve': undefined },
-        //     platform: 'node',
-        //     concurrency: 10
-        // }
     }
 }
 
