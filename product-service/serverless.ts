@@ -1,11 +1,15 @@
-import type { AWS } from '@serverless/typescript'
+import type { AWS } from '@serverless/typescript';
 
-import getProductsList from '@functions/getProductsList'
-import getProductsById from '@functions/getProductsById'
+import {
+    getProductsList,
+    getProductsById,
+    createProduct
+} from './src/functions';
 
 const serverlessConfiguration: AWS = {
     service: 'product-service',
     frameworkVersion: '3',
+    useDotenv: true,
     plugins: [
         'serverless-auto-swagger',
         'serverless-offline',
@@ -22,12 +26,19 @@ const serverlessConfiguration: AWS = {
         },
         environment: {
             AWS_NODEJS_CONNECTION_REUSE_ENABLED: '1',
-            NODE_OPTIONS: '--enable-source-maps --stack-trace-limit=1000'
+            NODE_OPTIONS: '--enable-source-maps --stack-trace-limit=1000',
+            PG_HOST:
+                'rds-cloudx-database.co8groe4sq5b.eu-west-1.rds.amazonaws.com',
+            PG_PORT: '5432',
+            PG_DATABASE: 'cloudx',
+            PG_USERNAME: 'postgres',
+            PG_PASSWORD: '$aderiho280993'
         }
     },
     functions: {
         getProductsList,
-        getProductsById
+        getProductsById,
+        createProduct
     },
     package: { individually: true },
     custom: {
@@ -41,6 +52,6 @@ const serverlessConfiguration: AWS = {
             excludeFiles: 'src/**/*.test.ts'
         }
     }
-}
+};
 
-module.exports = serverlessConfiguration
+module.exports = serverlessConfiguration;

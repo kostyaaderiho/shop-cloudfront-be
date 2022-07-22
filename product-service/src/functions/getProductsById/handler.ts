@@ -1,31 +1,38 @@
-import type { ValidatedEventAPIGatewayProxyEvent } from '../../libs/api-gateway'
-import { middyfy } from '../../libs/lambda'
-import { ERROR_MESSAGES } from '../../constants'
-import { CORS_HEADERS } from '../constants'
-import { PRODUCTS } from '../../mocks'
-import schema from './schema'
+import { ERROR_MESSAGES } from '../../constants';
+import { logger, middyfy } from '../../utils';
 
-export const getProductsById: ValidatedEventAPIGatewayProxyEvent<
-    typeof schema
-> = async (event) => {
-    const { productId } = event.pathParameters || {}
-    const product = PRODUCTS.find((p) => p.id === productId)
+export const getProductsById = async (event, client) => {
+    const { productId } = event.pathParameters || {};
 
-    if (product) {
-        return {
-            headers: CORS_HEADERS,
-            body: JSON.stringify(product),
-            statusCode: 200
+    try {
+        let result;
+
+        if (productId) {
+            result = await client.query(
+                `SELECT p.id, p.title, p.description, p.price, s.counter
+                FROM products p
+                INNER JOIN stocks s on p.id = s.product_id
+                WHERE p.id = $1;`,
+                [productId]
+            );
         }
-    }
 
-    return {
-        headers: CORS_HEADERS,
-        body: JSON.stringify({
-            message: ERROR_MESSAGES.productNotFound
-        }),
-        statusCode: 404
+        if (result.rows[0]) {
+            return {
+                body: JSON.stringify(result.rows[0]),
+                statusCode: 200
+            };
+        } else {
+            return {
+                body: JSON.stringify({
+                    message: ERROR_MESSAGES.productNotFound
+                }),
+                statusCode: 404
+            };
+        }
+    } catch (err) {
+        logger.error(err);
     }
-}
+};
 
-export const main = middyfy(getProductsById)
+export const main = middyfy(getProductsById);

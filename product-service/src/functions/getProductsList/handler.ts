@@ -1,15 +1,15 @@
-import type { ValidatedEventAPIGatewayProxyEvent } from '../../libs/api-gateway'
-import { middyfy } from '../../libs/lambda'
-import { CORS_HEADERS } from '../constants'
-import { PRODUCTS } from '../../mocks'
-import schema from './schema'
+import { logger, middyfy } from '../../utils';
 
-export const getProductsList: ValidatedEventAPIGatewayProxyEvent<
-    typeof schema
-> = async () => ({
-    headers: CORS_HEADERS,
-    body: JSON.stringify(PRODUCTS),
-    statusCode: 200
-})
+export const getProductsList = async (_event, client) => {
+    try {
+        const result = await client.query(`SELECT * FROM products;`);
+        return {
+            body: JSON.stringify(result.rows),
+            statusCode: 200
+        };
+    } catch (err) {
+        logger.error(err);
+    }
+};
 
-export const main = middyfy(getProductsList)
+export const main = middyfy(getProductsList);
