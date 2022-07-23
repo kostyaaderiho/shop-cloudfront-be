@@ -16,6 +16,7 @@
         "@middy/http-error-handler": "^3.1.0",
         "@middy/http-json-body-parser": "^2.5.3",
         "@middy/validator": "^3.1.0",
+        "joi": "^17.6.0",
         "pg": "^8.7.3"
     },
     "devDependencies": {
@@ -28,7 +29,6 @@
         "json-schema-to-ts": "^1.5.0",
         "serverless": "^3.0.0",
         "serverless-auto-swagger": "^2.8.0",
-        "serverless-dotenv-plugin": "^4.0.1",
         "serverless-esbuild": "^1.23.3",
         "serverless-offline": "^8.8.1",
         "serverless-openapi-documentation": "^0.4.0",

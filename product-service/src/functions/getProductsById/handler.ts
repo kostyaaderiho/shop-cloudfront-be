@@ -1,5 +1,5 @@
-import { ERROR_MESSAGES } from '../../constants';
-import { logger, middyfy } from '../../utils';
+import { HttpCode } from '../../constants';
+import { middyfy, HttpError } from '../../utils';
 
 export const getProductsById = async (event, client) => {
     const { productId } = event.pathParameters || {};
@@ -20,18 +20,14 @@ export const getProductsById = async (event, client) => {
         if (result.rows[0]) {
             return {
                 body: JSON.stringify(result.rows[0]),
-                statusCode: 200
-            };
-        } else {
-            return {
-                body: JSON.stringify({
-                    message: ERROR_MESSAGES.productNotFound
-                }),
-                statusCode: 404
+                statusCode: HttpCode.OK
             };
         }
     } catch (err) {
-        logger.error(err);
+        throw new HttpError(
+            HttpCode.NOT_FOUND,
+            `The product with id = ${productId} was not found.`
+        );
     }
 };
 

@@ -9,7 +9,6 @@ import {
 const serverlessConfiguration: AWS = {
     service: 'product-service',
     frameworkVersion: '3',
-    useDotenv: true,
     plugins: [
         'serverless-auto-swagger',
         'serverless-offline',

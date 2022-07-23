@@ -1,20 +1,7 @@
-export const EVENT_REQUEST_SCHEMA = {
-    type: 'object',
-    properties: {
-        body: {
-            type: 'object',
-            properties: {
-                title: {
-                    type: 'string'
-                },
-                description: {
-                    type: 'string'
-                },
-                price: {
-                    type: 'integer'
-                }
-            },
-            required: ['title', 'description', 'price']
-        }
-    }
-};
+import Joi from 'joi';
+
+export const SCHEMA = Joi.object({
+    title: Joi.string().required(),
+    price: Joi.number().required(),
+    description: Joi.string().required()
+});

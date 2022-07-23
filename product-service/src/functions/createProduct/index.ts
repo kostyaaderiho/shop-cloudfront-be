@@ -9,12 +9,8 @@ export default {
                 path: 'products',
                 responses: {
                     200: {
-                        description: 'The response with the Product.',
+                        description: 'The response with the created Product.',
                         bodyType: 'Product'
-                    },
-                    404: {
-                        description: 'The response with not found Product.',
-                        bodyType: 'ResponseMessage'
                     }
                 }
             }

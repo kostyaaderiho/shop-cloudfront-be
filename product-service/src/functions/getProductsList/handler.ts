@@ -1,15 +1,13 @@
-import { logger, middyfy } from '../../utils';
+import { HttpCode } from '../../constants';
+import { middyfy } from '../../utils';
 
 export const getProductsList = async (_event, client) => {
-    try {
-        const result = await client.query(`SELECT * FROM products;`);
-        return {
-            body: JSON.stringify(result.rows),
-            statusCode: 200
-        };
-    } catch (err) {
-        logger.error(err);
-    }
+    const result = await client.query(`SELECT * FROM products;`);
+
+    return {
+        body: JSON.stringify(result.rows),
+        statusCode: HttpCode.OK
+    };
 };
 
 export const main = middyfy(getProductsList);
