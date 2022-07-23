@@ -11,8 +11,13 @@ export default {
                     200: {
                         description: 'The response with the created Product.',
                         bodyType: 'Product'
+                    },
+                    400: {
+                        description: 'Invalid body',
+                        bodyType: 'ResponseMessage'
                     }
-                }
+                },
+                bodyType: 'ProductBody'
             }
         }
     ]

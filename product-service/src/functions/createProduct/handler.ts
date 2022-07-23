@@ -2,9 +2,10 @@ import { Pool } from 'pg';
 
 import { DB_CONFIG, HttpCode } from '../../constants';
 import { middyfy, HttpError } from '../../utils';
+import { LambdaHandler, ProductBody } from '../../types';
 import { SCHEMA } from './constants';
 
-export const createProduct = async (event) => {
+export const createProduct: LambdaHandler<ProductBody> = async (event) => {
     const { error } = SCHEMA.validate(event.body);
 
     if (error) {

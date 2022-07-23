@@ -9,6 +9,7 @@ import {
 const serverlessConfiguration: AWS = {
     service: 'product-service',
     frameworkVersion: '3',
+    useDotenv: true,
     plugins: [
         'serverless-auto-swagger',
         'serverless-offline',
@@ -26,12 +27,11 @@ const serverlessConfiguration: AWS = {
         environment: {
             AWS_NODEJS_CONNECTION_REUSE_ENABLED: '1',
             NODE_OPTIONS: '--enable-source-maps --stack-trace-limit=1000',
-            PG_HOST:
-                'rds-cloudx-database.co8groe4sq5b.eu-west-1.rds.amazonaws.com',
+            PG_HOST: '${env:PG_HOST}',
+            PG_DATABASE: '${env:PG_DATABASE}',
             PG_PORT: '5432',
-            PG_DATABASE: 'cloudx',
-            PG_USERNAME: 'postgres',
-            PG_PASSWORD: '$aderiho280993'
+            PG_USERNAME: '${env:PG_USERNAME}',
+            PG_PASSWORD: '${env:PG_PASSWORD}'
         }
     },
     functions: {
