@@ -2,7 +2,11 @@ import { HttpCode } from '../../constants';
 import { middyfy } from '../../utils';
 import { LambdaHandler } from '../../types';
 
-export const GETAllSQL = 'SELECT * FROM products;';
+export const GETAllSQL = `
+    SELECT p.id, p.title, p.description, p.price, s.counter
+    FROM products p
+    INNER JOIN stocks s ON p.id = s.product_id;
+`;
 
 export const getProductsList: LambdaHandler = async (
     _event,
