@@ -15,7 +15,7 @@ export const createProduct: LambdaHandler<ProductBody> = async (event) => {
         );
     }
 
-    const { title, description, price } = event.body;
+    const { title, description, price, count } = event.body;
     const pool = new Pool(DB_CONFIG);
     const client = await pool.connect();
 
@@ -29,8 +29,8 @@ export const createProduct: LambdaHandler<ProductBody> = async (event) => {
 
         const { id } = result.rows[0];
         await client.query(
-            `INSERT INTO stocks (product_id, counter) VALUES ($1, 1)`,
-            [id]
+            `INSERT INTO stocks (product_id, counter) VALUES ($1, $2)`,
+            [id, count]
         );
 
         await client.query('COMMIT');

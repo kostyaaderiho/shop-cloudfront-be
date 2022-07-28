@@ -1,6 +1,7 @@
 export type ProductBody = {
     title: string;
     price: number;
+    count: number;
     description: string;
 };
 
