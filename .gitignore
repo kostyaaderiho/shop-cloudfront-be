@@ -2,3 +2,4 @@ node_modules
 swagger
 .webpack
 .env
+test-file-upload
