@@ -11,7 +11,9 @@ import {
 export const importProductsFile = async (event) => {
     const { name } = event.queryStringParameters || {};
 
-    const CATALOG_PATH = `${PRODUCT_CSV_FILES_BUCKET_UPLOADED_FOLDER}/${name}`;
+    const CATALOG_PATH = `${PRODUCT_CSV_FILES_BUCKET_UPLOADED_FOLDER}/${decodeURIComponent(
+        name
+    )}`;
     const S3 = new AWS.S3({ region: PRODUCT_CSV_FILES_BUCKET_REGION });
     const BUCKET = PRODUCT_CSV_FILES_BUCKET;
     const BUCKET_PARAMS = {

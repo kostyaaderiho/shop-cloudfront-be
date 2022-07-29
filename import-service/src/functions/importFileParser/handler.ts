@@ -19,7 +19,7 @@ export const importFileParser = async (event) => {
     for (const record of event.Records) {
         PARAMS = {
             Bucket: record.s3.bucket.name,
-            Key: record.s3.object.key
+            Key: decodeURIComponent(record.s3.object.key)
         };
     }
 
