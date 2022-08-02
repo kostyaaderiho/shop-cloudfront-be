@@ -3,3 +3,4 @@ swagger
 .webpack
 .env
 test-file-upload
+test-sns-sqs
