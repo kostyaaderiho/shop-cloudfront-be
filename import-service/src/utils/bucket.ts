@@ -2,7 +2,7 @@ import AWS from 'aws-sdk';
 
 import { PRODUCT_CSV_FILES_BUCKET_REGION } from '../constants';
 
-export const CopyFile = async ({
+export const CopyFile = ({
     region = PRODUCT_CSV_FILES_BUCKET_REGION,
     params,
     from,
@@ -20,14 +20,14 @@ export const CopyFile = async ({
         region
     });
 
-    return await S3.copyObject({
+    return S3.copyObject({
         CopySource: params.Bucket + '/' + params.Key,
         Key: params.Key.replace(from, to),
         Bucket: params.Bucket
     }).promise();
 };
 
-export const DeleteFile = async ({
+export const DeleteFile = ({
     region = PRODUCT_CSV_FILES_BUCKET_REGION,
     params
 }: {
@@ -41,7 +41,7 @@ export const DeleteFile = async ({
         region
     });
 
-    return await S3.deleteObject({
+    return S3.deleteObject({
         Bucket: params.Bucket,
         Key: params.Key
     }).promise();
