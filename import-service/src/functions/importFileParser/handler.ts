@@ -1,6 +1,6 @@
 import AWS from 'aws-sdk';
-import csv from 'csv-parser';
 
+import { parseCSVFile, CopyFile, DeleteFile } from '../../utils';
 import { middyfy } from '../../libs';
 import {
     PRODUCT_CSV_FILES_BUCKET_UPLOADED_FOLDER,
@@ -9,76 +9,57 @@ import {
     CORS_HEADERS
 } from '../../constants';
 
-export const importFileParser = async (event) => {
-    const S3 = new AWS.S3({
-        region: PRODUCT_CSV_FILES_BUCKET_REGION
-    });
-    const SQS = new AWS.SQS({ region: 'eu-west-1' });
-
+export const importFileParser = async (event: {
+    Records: { s3: { bucket: { name: string }; object: { key: string } } }[];
+}) => {
+    const SQS = new AWS.SQS({ region: PRODUCT_CSV_FILES_BUCKET_REGION });
     const SQS_PARAMS = {
-        QueueName: 'catalogItemsQueue'
+        QueueName: process.env.QueueName
     };
-    let PARAMS;
 
     for (const record of event.Records) {
-        PARAMS = {
+        const PARAMS = {
             Bucket: record.s3.bucket.name,
             Key: decodeURIComponent(record.s3.object.key)
         };
-    }
-
-    let QueueUrl: string;
-
-    await new Promise((resolve) => {
-        SQS.getQueueUrl(SQS_PARAMS, (err, data) => {
-            if (err) {
-                console.log('err', err);
-            } else {
-                resolve(data.QueueUrl);
-                QueueUrl = data.QueueUrl;
-            }
+        const QUEUE_URL: string = await new Promise((resolve) => {
+            SQS.getQueueUrl(SQS_PARAMS, (err, data) => {
+                if (err) {
+                    console.log('err', err);
+                } else {
+                    resolve(data.QueueUrl);
+                }
+            });
         });
-    });
 
-    console.log('QueueUrl', QueueUrl);
+        const records = await parseCSVFile(PARAMS);
 
-    const s3ObjectStream = S3.getObject(PARAMS).createReadStream();
-
-    await new Promise((resolve, reject) => {
-        s3ObjectStream
-            .pipe(csv())
-            .on('data', (record) => {
-                SQS.sendMessage(
-                    {
-                        QueueUrl,
-                        MessageBody: JSON.stringify(record)
-                    },
-                    (err, data) => {
-                        if (err) {
-                            console.log('err', err);
-                        } else {
-                            console.log('Send message for:', [data]);
-                        }
+        records.forEach((fileRecord) => {
+            SQS.sendMessage(
+                {
+                    QueueUrl: QUEUE_URL,
+                    MessageBody: JSON.stringify(fileRecord)
+                },
+                (err, data) => {
+                    if (err) {
+                        console.log('err', err);
+                    } else {
+                        console.log('Send message for: ', [data]);
                     }
-                );
-            })
-            .on('error', (err) => reject(err))
-            .on('end', () => console.log('Parse CSV end.'));
-    });
+                }
+            );
+        });
 
-    await S3.copyObject({
-        CopySource: PARAMS.Bucket + '/' + PARAMS.Key,
-        Key: PARAMS.Key.replace(
-            PRODUCT_CSV_FILES_BUCKET_UPLOADED_FOLDER,
-            PRODUCT_CSV_FILES_BUCKET_PARSED_FOLDER
-        ),
-        Bucket: PARAMS.Bucket
-    }).promise();
+        const copiedFile = await CopyFile({
+            from: PRODUCT_CSV_FILES_BUCKET_UPLOADED_FOLDER,
+            to: PRODUCT_CSV_FILES_BUCKET_PARSED_FOLDER,
+            params: PARAMS
+        });
 
-    await S3.deleteObject({
-        Bucket: PARAMS.Bucket,
-        Key: PARAMS.Key
-    }).promise();
+        if (copiedFile) {
+            await DeleteFile({ params: PARAMS });
+        }
+    }
 
     return {
         statusCode: 202,
