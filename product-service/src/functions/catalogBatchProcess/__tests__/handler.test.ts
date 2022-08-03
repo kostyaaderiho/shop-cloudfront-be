@@ -1,31 +1,44 @@
 import { APIGatewayProxyEvent } from 'aws-lambda';
-import AWS from 'aws-sdk';
 
+import { INVITE_MESSAGE } from '../../../constants';
+import { publishEvent } from '../../../utils';
 import { productService } from '../../../services';
 import { catalogBatchProcess } from '../handler';
 import { PRODUCTS } from '../../../mocks';
 
+jest.mock('../../../utils');
+
 describe('catalogBatchProcess', () => {
-    test('200 status', () => {
+    test('200 status', async () => {
         const EVENT = {
-            Records: PRODUCTS.map((p) => ({ body: JSON.stringify(p) }))
-        } as unknown as APIGatewayProxyEvent;
-
-        const publish = jest.fn(() => ({
-            promise: () => Promise.resolve()
-        }));
-
-        AWS.SNS = jest.fn().mockImplementation(() => ({
-            publish
-        })) as unknown as typeof AWS.SNS;
+            Records: PRODUCTS.slice(0, 1).map((p) => ({
+                body: JSON.stringify(p)
+            }))
+        };
+        const EXPECTED_PRODUCT = PRODUCTS[0];
 
         productService.create = jest
             .fn()
-            .mockImplementation(() => Promise.resolve(PRODUCTS[0]));
+            .mockImplementation(() => Promise.resolve(EXPECTED_PRODUCT));
 
-        catalogBatchProcess(EVENT);
+        await catalogBatchProcess(EVENT as unknown as APIGatewayProxyEvent);
 
-        expect(productService.create).toHaveBeenCalledTimes(1);
-        expect(productService.create).toHaveBeenCalledWith(PRODUCTS[0]);
+        expect(productService.create).toHaveBeenCalledTimes(
+            EVENT.Records.length
+        );
+        expect(productService.create).toHaveBeenCalledWith(EXPECTED_PRODUCT);
+
+        expect(publishEvent).toHaveBeenCalledTimes(EVENT.Records.length);
+        expect(publishEvent).toHaveBeenCalledWith({
+            MessageAttributes: {
+                price: {
+                    DataType: 'Number',
+                    StringValue: `${EXPECTED_PRODUCT.price}`
+                }
+            },
+            Message: JSON.stringify(EXPECTED_PRODUCT),
+            Subject: INVITE_MESSAGE,
+            TopicArn: undefined
+        });
     });
 });

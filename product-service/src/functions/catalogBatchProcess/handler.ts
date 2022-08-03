@@ -1,40 +1,33 @@
-import AWS from 'aws-sdk';
-
 import { HttpCode, INVITE_MESSAGE } from '../../constants';
 import { productService } from '../../services';
 import { LambdaHandler } from '../../types';
-import { middyfy } from '../../utils';
+import { middyfy, publishEvent } from '../../utils';
 
 export const catalogBatchProcess: LambdaHandler = async (event) => {
-    const SNS = new AWS.SNS({ region: 'eu-west-1' });
-
     const products = event.Records.map(({ body }) => JSON.parse(body));
 
-    for (const p of products) {
-        const product = await productService.create(p);
+    for (const product of products) {
+        try {
+            const createdProduct = await productService.create(product);
 
-        await SNS.publish({
-            MessageAttributes: {
-                price: {
-                    DataType: 'Number',
-                    StringValue: `${product.price}`
-                }
-            },
-            Message: JSON.stringify(product),
-            TopicArn: process.env.SNS_ARN,
-            Subject: INVITE_MESSAGE
-        }).promise();
-
-        return {
-            body: JSON.stringify(product),
-            statusCode: HttpCode.OK
-        };
+            await publishEvent({
+                MessageAttributes: {
+                    price: {
+                        DataType: 'Number',
+                        StringValue: `${createdProduct.price}`
+                    }
+                },
+                Message: JSON.stringify(createdProduct),
+                TopicArn: process.env.SNS_ARN,
+                Subject: INVITE_MESSAGE
+            });
+        } catch (err) {
+            return {
+                body: null,
+                statusCode: HttpCode.SERVER_ERROR
+            };
+        }
     }
-
-    return {
-        statusCode: HttpCode.OK,
-        body: null
-    };
 };
 
 export const main = middyfy(catalogBatchProcess);
