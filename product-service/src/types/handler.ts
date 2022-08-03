@@ -1,4 +1,3 @@
-import { Client } from 'pg';
 import {
     APIGatewayProxyCallback,
     APIGatewayProxyResult,
@@ -9,8 +8,8 @@ import {
 export type LambdaHandler<TBody extends { [name: string]: any } = {}> = (
     event: APIGatewayProxyEvent & {
         body: TBody;
+        Records?: any[];
     },
-    context: Context,
-    callback: APIGatewayProxyCallback,
-    dbClient: Client
+    context?: Context,
+    callback?: APIGatewayProxyCallback
 ) => Promise<APIGatewayProxyResult>;

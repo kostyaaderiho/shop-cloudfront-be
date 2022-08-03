@@ -23,7 +23,7 @@ export const makeRequest =
         try {
             await client.connect();
 
-            const result = await handler(event, context, callback, client);
+            const result = await handler(event, context, callback);
 
             return {
                 ...result,

@@ -80,6 +80,22 @@ const serverlessConfiguration: AWS = {
                     Protocol: 'email',
                     TopicArn: {
                         Ref: 'SNSTopic'
+                    },
+                    FilterPolicy: {
+                        price: [{ numeric: ['<', 10] }]
+                    }
+                }
+            },
+            SNSCopySubscription: {
+                Type: 'AWS::SNS::Subscription',
+                Properties: {
+                    Endpoint: 'kostya.aderiho@gmail.com',
+                    Protocol: 'email',
+                    TopicArn: {
+                        Ref: 'SNSTopic'
+                    },
+                    FilterPolicy: {
+                        price: [{ numeric: ['>=', 10] }]
                     }
                 }
             }

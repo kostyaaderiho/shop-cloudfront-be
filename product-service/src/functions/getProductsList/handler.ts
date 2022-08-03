@@ -1,23 +1,13 @@
+import { productService } from '../../services';
+import { LambdaHandler } from '../../types';
 import { HttpCode } from '../../constants';
 import { middyfy } from '../../utils';
-import { LambdaHandler } from '../../types';
 
-export const GETAllSQL = `
-    SELECT p.id, p.title, p.description, p.price, s.counter
-    FROM products p
-    INNER JOIN stocks s ON p.id = s.product_id;
-`;
-
-export const getProductsList: LambdaHandler = async (
-    _event,
-    _context,
-    _callback,
-    client
-) => {
-    const result = await client.query(GETAllSQL);
+export const getProductsList: LambdaHandler = async () => {
+    const products = await productService.getAll();
 
     return {
-        body: JSON.stringify(result.rows),
+        body: JSON.stringify(products),
         statusCode: HttpCode.OK
     };
 };
