@@ -17,12 +17,6 @@ export const GETAllSQL = `
 `;
 
 class ProductService<T extends Product> {
-    dbClient: Client;
-
-    constructor(dbClient?: Client) {
-        this.dbClient = dbClient || new Client(DB_CONFIG);
-    }
-
     async create(product: Product): Promise<Product> {
         const pool = new Pool(DB_CONFIG);
         const client = await pool.connect();
@@ -55,27 +49,33 @@ class ProductService<T extends Product> {
     }
 
     async getById(id: Product['id']): Promise<T> {
+        const client = new Client(DB_CONFIG);
         let product: T;
 
         try {
-            await this.dbClient.connect();
+            await client.connect();
 
-            const result = await this.dbClient.query(GETProductByIDSQL, [id]);
+            const result = await client.query(GETProductByIDSQL, [id]);
 
             product = result.rows[0];
         } finally {
-            this.dbClient.end();
+            client.end();
         }
 
         return product;
     }
 
     async getAll(): Promise<T[]> {
-        await this.dbClient.connect();
+        const client = new Client(DB_CONFIG);
+        let result;
 
-        const result = await this.dbClient.query(GETAllSQL);
+        try {
+            await client.connect();
 
-        this.dbClient.end();
+            result = await client.query(GETAllSQL);
+        } finally {
+            client.end();
+        }
 
         return result.rows;
     }
