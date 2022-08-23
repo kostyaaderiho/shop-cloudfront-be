@@ -1,7 +1,9 @@
-import { generateAuthPolicy, Auth } from '@utils/index';
+import { APIGatewayTokenAuthorizerEvent } from 'aws-lambda';
+import { generateAuthPolicy } from '@utils/auth';
 import { middyfy } from '@libs/lambda';
+import { Auth } from '@services/auth';
 
-const basicAuthorizer = async (event) => {
+const basicAuthorizer = async (event: APIGatewayTokenAuthorizerEvent) => {
     const token = event.authorizationToken;
 
     if (!token) {
@@ -13,7 +15,13 @@ const basicAuthorizer = async (event) => {
 
     try {
         const decodedToken = Auth.decodeToken(token.split(' ')[1]);
-        const effect = Auth.isAuthorized(decodedToken) ? 'Allow' : 'Deny';
+        const effect = Auth.validateToken(
+            decodedToken,
+            process.env.USER_NAME,
+            process.env.USER_PASSWORD
+        )
+            ? 'Allow'
+            : 'Deny';
 
         return generateAuthPolicy(decodedToken, event.methodArn, effect);
     } catch (err) {
