@@ -1,18 +1,20 @@
-import { getProductsList as getProductsList_ } from '../handler'
-import { PRODUCTS } from '.././../../mocks'
-import { CORS_HEADERS } from '../../constants'
-import { getOptionalParamsFunc } from '../../../testUtils/lambda'
+import { getProductsList as getProductsList_, GETAllSQL } from '../handler';
+import { getOptionalParamsFunc, mockClient } from '../../../testUtils';
+import { PRODUCTS } from '.././../../mocks';
 
-const getProductsList = getOptionalParamsFunc(getProductsList_)
+const getProductsList = getOptionalParamsFunc(getProductsList_);
 
 describe('getProductsList', () => {
-    test('200 status', async () => {
-        const response = await getProductsList()
+    test('200 response status', async () => {
+        const client = mockClient(PRODUCTS);
 
+        const response = await getProductsList(null, null, null, client);
+
+        expect(client.query).toHaveBeenCalledTimes(1);
+        expect(client.query).toHaveBeenCalledWith(GETAllSQL);
         expect(response).toEqual({
-            headers: CORS_HEADERS,
             body: JSON.stringify(PRODUCTS),
             statusCode: 200
-        })
-    })
-})
+        });
+    });
+});

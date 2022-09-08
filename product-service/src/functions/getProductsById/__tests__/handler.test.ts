@@ -1,38 +1,33 @@
-import { getProductsById as getProductsById_ } from '../handler'
-import { PRODUCTS } from '.././../../mocks'
-import { CORS_HEADERS } from '../../constants'
-import { ERROR_MESSAGES } from '../../../constants'
-import { getOptionalParamsFunc } from '../../../testUtils/lambda'
+import { APIGatewayProxyEvent } from 'aws-lambda';
 
-const getProductsById = getOptionalParamsFunc(getProductsById_)
+import {
+    getProductsById as getProductsById_,
+    GETProductByIDSQL
+} from '../handler';
+import { getOptionalParamsFunc, mockClient } from '../../../testUtils';
+import { PRODUCTS } from '.././../../mocks';
+
+const getProductsById = getOptionalParamsFunc(getProductsById_);
 
 describe('getProductsById', () => {
-    test('200 status', async () => {
-        const response = await getProductsById({
+    test('200 status response', async () => {
+        const EVENT: Partial<APIGatewayProxyEvent> = {
             pathParameters: {
                 productId: PRODUCTS[0].id
             }
-        })
+        };
 
+        const client = mockClient([PRODUCTS[0]]);
+
+        const response = await getProductsById(EVENT, null, null, client);
+
+        expect(client.query).toHaveBeenCalledTimes(1);
+        expect(client.query).toHaveBeenCalledWith(GETProductByIDSQL, [
+            EVENT.pathParameters.productId
+        ]);
         expect(response).toEqual({
-            headers: CORS_HEADERS,
             body: JSON.stringify(PRODUCTS[0]),
             statusCode: 200
-        })
-    })
-
-    test('404 status', async () => {
-        const response = await getProductsById({
-            pathParameters: {
-                productId: '1-2-3-4-5'
-            }
-        })
-        expect(response).toEqual({
-            headers: CORS_HEADERS,
-            body: JSON.stringify({
-                message: ERROR_MESSAGES.productNotFound
-            }),
-            statusCode: 404
-        })
-    })
-})
+        });
+    });
+});
