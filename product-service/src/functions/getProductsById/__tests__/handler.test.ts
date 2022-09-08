@@ -1,13 +1,14 @@
 import { APIGatewayProxyEvent } from 'aws-lambda';
 
-import {
-    getProductsById as getProductsById_,
-    GETProductByIDSQL
-} from '../handler';
-import { getOptionalParamsFunc, mockClient } from '../../../testUtils';
+import { getProductsById as getProductsById_ } from '../handler';
+import { getOptionalParamsFunc } from '../../../testUtils';
+import { productService } from '../../../services';
+import { HttpCode } from '../../../constants';
 import { PRODUCTS } from '.././../../mocks';
 
 const getProductsById = getOptionalParamsFunc(getProductsById_);
+
+jest.mock('../../../services/product');
 
 describe('getProductsById', () => {
     test('200 status response', async () => {
@@ -17,17 +18,16 @@ describe('getProductsById', () => {
             }
         };
 
-        const client = mockClient([PRODUCTS[0]]);
+        productService.getById = jest
+            .fn()
+            .mockImplementationOnce(() => PRODUCTS[0]);
 
-        const response = await getProductsById(EVENT, null, null, client);
+        const response = await getProductsById(EVENT);
 
-        expect(client.query).toHaveBeenCalledTimes(1);
-        expect(client.query).toHaveBeenCalledWith(GETProductByIDSQL, [
-            EVENT.pathParameters.productId
-        ]);
+        expect(productService.getById).toHaveBeenCalledTimes(1);
         expect(response).toEqual({
             body: JSON.stringify(PRODUCTS[0]),
-            statusCode: 200
+            statusCode: HttpCode.OK
         });
     });
 });

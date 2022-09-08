@@ -1,12 +1,12 @@
 import type { AWS } from '@serverless/typescript';
 
-import importProductsFile from '@functions/importProductsFile';
-import importFileParser from '@functions/importFileParser';
+import basicAuthorizer from '@functions/basicAuthorizer';
 
 const serverlessConfiguration: AWS = {
-    service: 'import-service',
+    service: 'authorization-service',
     frameworkVersion: '3',
     plugins: ['serverless-esbuild'],
+    useDotenv: true,
     provider: {
         name: 'aws',
         runtime: 'nodejs14.x',
@@ -19,29 +19,11 @@ const serverlessConfiguration: AWS = {
         environment: {
             AWS_NODEJS_CONNECTION_REUSE_ENABLED: '1',
             NODE_OPTIONS: '--enable-source-maps --stack-trace-limit=1000',
-            QueueName: 'catalogItemsQueue'
-        },
-        iamRoleStatements: [
-            {
-                Effect: 'Allow',
-                Action: 's3:ListBucket',
-                Resource: ['arn:aws:s3:::products-csv-files']
-            },
-            {
-                Effect: 'Allow',
-                Action: 's3:*',
-                Resource: ['arn:aws:s3:::products-csv-files/*']
-            },
-            {
-                Effect: 'Allow',
-                Action: 'sqs:*',
-                Resource: [
-                    'arn:aws:sqs:eu-west-1:976530182962:catalogItemsQueue'
-                ]
-            }
-        ]
+            USER_PASSWORD: '${env:USER_PASSWORD}',
+            USER_NAME: '${env:USER_NAME}'
+        }
     },
-    functions: { importProductsFile, importFileParser },
+    functions: { basicAuthorizer },
     package: { individually: true },
     custom: {
         esbuild: {
